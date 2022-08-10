@@ -77,22 +77,19 @@ export const t = initTRPC<{ ctx: Context; meta: Meta }>()({
 
 ```ts
 // OLD:
-const appRouter = trpc
-  .router()
-  .query('greeting', {
-    input: z.string(),
-    resolve({input}) {
-      return `hello ${input}!`
-    }
-  })
+const appRouter = trpc.router().query('greeting', {
+  input: z.string(),
+  resolve({ input }) {
+    return `hello ${input}!`;
+  },
+});
 
 // NEW:
 const appRouter = t.router({
-  greeting: t
-    .procedure
+  greeting: t.procedure
     .input(z.string())
-    .query(({ input }) => `hello ${input}!`)
-})
+    .query(({ input }) => `hello ${input}!`),
+});
 ```
 
 ### Calling procedures
@@ -113,43 +110,43 @@ trpc.greeting.useQuery('KATT');
 // OLD
 const appRouter = trpc
   .router()
-  .middleware(({next, ctx}) => {
+  .middleware(({ next, ctx }) => {
     if (!ctx.user) {
-      throw new TRPCError({ code: "UNAUTHORIZED" })
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
 
     return next({
       ctx: {
         ...ctx,
         user: ctx.user,
-      }
-    })
+      },
+    });
   })
   .query('greeting', {
-    resolve({input}) {
-      return `hello ${ctx.user.name}!`
-    }
-  })
+    resolve({ input }) {
+      return `hello ${ctx.user.name}!`;
+    },
+  });
 
 // NEW
-const isAuthed = t.middleware(({next, ctx}) => {
+const isAuthed = t.middleware(({ next, ctx }) => {
   if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED" })
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
 
   return next({
     ctx: {
       user: ctx.user,
-    }
-  })
-})
+    },
+  });
+});
 
 // Reusable:
-const authedProcedure = t.procedure.use(isAuthed)
+const authedProcedure = t.procedure.use(isAuthed);
 
 const appRouter = t.router({
-  greeting: authedProcedure.query(({ ctx }) => `hello ${ctx.name}!`)
-})
+  greeting: authedProcedure.query(({ ctx }) => `hello ${ctx.name}!`),
+});
 ```
 
 ## Migration path for the 95%
@@ -179,8 +176,8 @@ export const t = initTRPC<{
 
 **3. Create a new `appRouter`**
 
-1. Rename your old `appRouter` to `legacyRouter`
-2. Create a new app router:
+3.1. Rename your old `appRouter` to `legacyRouter`
+3.2. Create a new app router:
 
 ```ts
 import { t } from './trpc';
@@ -193,8 +190,8 @@ const legacyRouter = trpc
 export const appRouter = t.merge(legacyRouter);
 ```
 
-3. See if your app still builds
-4. Create a a test router:
+3.3. See if your app still builds
+3.4. Create a a test router:
 
 ```ts
 const greetingRouter = t.router({
@@ -202,11 +199,15 @@ const greetingRouter = t.router({
 });
 ```
 
-5. Merge it in:
+3.5. Merge it in:
 
 ```ts
 export const appRouter = t.merge(legacyRouter, greetingRouter);
 ```
+
+**6. If you're a React-user, upgrade to `@tanstack/react-query` `4`**
+
+See migration guide at https://tanstack.com/query/v4/docs/guides/migrating-to-react-query-4
 
 ## For the remaining 5%
 
