@@ -12,7 +12,7 @@ const isWatchMode = process.argv.includes('--watch');
 const extensions = ['.ts', '.tsx'];
 
 // Exporting this for generating barrel-files in scripts/entrypoints.ts
-export const PACKAGES = ['server', 'client', 'react', 'next'] as const;
+export const PACKAGES = ['server', 'client'] as const;
 export const INPUTS: Record<typeof PACKAGES[number], string[]> = {
   server: [
     'src/index.ts',
