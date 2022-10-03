@@ -53,10 +53,25 @@ type LoggerLinkOptions<TRouter extends AnyRouter> = {
   console?: ConsoleEsque;
 };
 
+const getConsole = (console: ConsoleEsque | undefined) => {
+  if (console) {
+    return console;
+  }
+  if (typeof console === 'undefined') {
+    throw new Error(
+      'No `console`-found in environment, you need to provide `console` when initializing `loggerLink`',
+    );
+  }
+  return console;
+};
+
 // maybe this should be moved to it's own package
 const defaultLogger =
-  <TRouter extends AnyRouter>(c: ConsoleEsque = console): LogFn<TRouter> =>
+  <TRouter extends AnyRouter>(
+    _logger: ConsoleEsque | undefined,
+  ): LogFn<TRouter> =>
   (props) => {
+    const c = getConsole(_logger);
     const { direction, input, type, path, context, id } = props;
     const [light, dark] = palette[type];
 
